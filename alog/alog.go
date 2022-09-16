@@ -53,9 +53,6 @@ func (l *Alog) Println(in ...any) {
 
 func (l *Alog) Printf(format string, v ...any) {
 	str := fmt.Sprintf(format, v...)
-	if !strings.HasSuffix(str, "\n") {
-		str += "\n"
-	}
 	l.msgChan <- str
 }
 

@@ -13,7 +13,7 @@ import (
 func testAsync(goNum int, messageNum int, w *sync.WaitGroup, alog2 *alog.Alog) {
 	defer w.Done()
 	for j := 0; j < messageNum; j++ {
-		alog2.Printf("I'm " + strconv.Itoa(goNum) + " async. " + "My msg num is: " + strconv.Itoa(j))
+		alog2.Println("I'm " + strconv.Itoa(goNum) + " async. " + "My msg num is: " + strconv.Itoa(j))
 	}
 }
 
