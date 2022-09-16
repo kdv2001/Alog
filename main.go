@@ -13,14 +13,14 @@ import (
 func testAsync(goNum int, messageNum int, w *sync.WaitGroup, alog2 *alog.Alog) {
 	defer w.Done()
 	for j := 0; j < messageNum; j++ {
-		alog2.Println("i'm " + strconv.Itoa(goNum) + " go. " + "My msg num is: " + strconv.Itoa(j))
+		alog2.Printf("I'm " + strconv.Itoa(goNum) + " async. " + "My msg num is: " + strconv.Itoa(j))
 	}
 }
 
 func testSync(goNum int, messageNum int, w *sync.WaitGroup) {
 	defer w.Done()
 	for j := 0; j < messageNum; j++ {
-		log.Println("i'm " + strconv.Itoa(goNum) + " go. " + "My msg num is: " + strconv.Itoa(j))
+		log.Println("I'm " + strconv.Itoa(goNum) + " sync. " + "My msg num is: " + strconv.Itoa(j))
 	}
 }
 
@@ -43,7 +43,7 @@ func main() {
 	}
 	wg2 := sync.WaitGroup{}
 
-	//synk
+	//sync
 	start := time.Now()
 	for i := 0; i < threadsNum; i++ {
 		wg2.Add(1)
@@ -52,8 +52,8 @@ func main() {
 	wg2.Wait()
 	workTimeSync := time.Since(start)
 
-	//asynk
-	s := alog.NewAlog(os.Stdout, "DEBUG", 1)
+	//async
+	s := alog.NewAlog(os.Stdout, "Debug")
 	wg := sync.WaitGroup{}
 
 	start = time.Now()
@@ -66,7 +66,7 @@ func main() {
 	s.StopLogging()
 	workTimeAsync := time.Since(start)
 
-	fmt.Println("work async time " + workTimeAsync.String())
-	fmt.Println("work sync time " + workTimeSync.String())
-	//fmt.Scanln()
+	fmt.Println("Work async time: " + workTimeAsync.String())
+	fmt.Println("Work sync time: " + workTimeSync.String())
+	fmt.Scanln()
 }
