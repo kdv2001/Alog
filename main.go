@@ -31,11 +31,6 @@ func main() {
 		fmt.Println("args != 2")
 		return
 	}
-	s := alog.NewAlog(os.Stdout, "DEBUG")
-	s.StartLogging()
-
-	wg := sync.WaitGroup{}
-
 	threadsNum, err := strconv.Atoi(args[1])
 	if err != nil {
 		fmt.Println("second argument is not int")
@@ -46,23 +41,32 @@ func main() {
 		fmt.Println("third argument is not int")
 		return
 	}
+	wg2 := sync.WaitGroup{}
+
+	//synk
 	start := time.Now()
+	for i := 0; i < threadsNum; i++ {
+		wg2.Add(1)
+		go testSync(i, messageNum, &wg2)
+	}
+	wg2.Wait()
+	workTimeSync := time.Since(start)
+
+	//asynk
+	s := alog.NewAlog(os.Stdout, "DEBUG", 1)
+	wg := sync.WaitGroup{}
+
+	start = time.Now()
+	s.StartLogging()
 	for i := 0; i < threadsNum; i++ {
 		wg.Add(1)
 		go testAsync(i, messageNum, &wg, s)
 	}
 	wg.Wait()
 	s.StopLogging()
-
 	workTimeAsync := time.Since(start)
-	start = time.Now()
-	for i := 0; i < threadsNum; i++ {
-		wg.Add(1)
-		go testSync(i, messageNum, &wg)
-	}
-	wg.Wait()
-	workTimeSync := time.Since(start)
+
 	fmt.Println("work async time " + workTimeAsync.String())
 	fmt.Println("work sync time " + workTimeSync.String())
-	fmt.Scanln()
+	//fmt.Scanln()
 }

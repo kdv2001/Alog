@@ -3,49 +3,39 @@ package alog
 import (
 	"fmt"
 	"io"
+	_ "net/http/pprof"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Alog struct {
 	msgChan chan string
-	stop    chan bool
-	writer  io.Writer
-	mu      *sync.Mutex
-	wg      *sync.WaitGroup
-	prefix  string
+	//stop    chan bool
+	writer io.Writer
+	//mu      *sync.Mutex
+	wg     *sync.WaitGroup
+	numgos int
+	//prefix  string	stop    chan bool
 }
 
-func NewAlog(w io.Writer, p string) *Alog {
-	return &Alog{msgChan: make(chan string), stop: make(chan bool), writer: w, mu: &sync.Mutex{}, wg: &sync.WaitGroup{}, prefix: p}
+func NewAlog(w io.Writer, p string, numgos int) *Alog {
+	return &Alog{msgChan: make(chan string), numgos: numgos, wg: &sync.WaitGroup{}, writer: w /*, stop: make(chan bool), writer: w, mu: &sync.Mutex{}, wg: &sync.WaitGroup{}, prefix: p*/}
 }
 
 func (l *Alog) StartLogging() {
-	l.wg.Add(1)
-	go func(w *sync.WaitGroup) {
-		defer w.Done()
-		wg := sync.WaitGroup{}
-	Loop:
-		for {
-			select {
-			case msg := <-l.msgChan:
-				wg.Add(1)
-				go l.write(msg, &wg)
-			case <-l.stop:
-				wg.Wait()
-				close(l.msgChan)
-				break Loop
-			}
-		}
-	}(l.wg)
-}
+	l.wg.Add(l.numgos)
+	for i := 0; i < l.numgos; i++ {
+		go func(w *sync.WaitGroup) {
+			defer w.Done()
+			for msg := range l.msgChan {
+				//fmt.Fprintln(l.writer, msg)
+				msg = fmt.Sprintf("%s  MSG: %s\n", time.Now().String(), msg)
 
-func (l *Alog) write(str string, wg *sync.WaitGroup) {
-	//str = fmt.Sprintf("%s  %s  MSG: %s", time.Now().Format(time.RFC1123), l.prefix, str)
-	defer wg.Done()
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	l.writer.Write([]byte(str))
+				l.writer.Write([]byte(msg))
+			}
+		}(l.wg)
+	}
 }
 
 func (l *Alog) Printf(format string, v ...any) {
@@ -56,22 +46,20 @@ func (l *Alog) Printf(format string, v ...any) {
 	l.msgChan <- str
 }
 
-func (l *Alog) Println(str string) {
-	if !strings.HasSuffix(str, "\n") {
-		str += "\n"
-	}
+func (l *Alog) Println(in any) {
+	str := fmt.Sprintf("%s", in)
+
 	l.msgChan <- str
 }
 func (l *Alog) StopLogging() {
-	l.stop <- true
+	close(l.msgChan)
 	l.wg.Wait()
-	close(l.stop)
 }
 
-func (l *Alog) SetPrefix(newPrefix string) {
+/*func (l *Alog) SetPrefix(newPrefix string) {
 	l.prefix = newPrefix
 }
 
 func (l *Alog) ChangeWriter(writer io.Writer) {
 	l.writer = writer
-}
+}*/
