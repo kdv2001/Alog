@@ -53,7 +53,7 @@ func main() {
 	workTimeSync := time.Since(start)
 
 	//async
-	s := alog.NewAlog(os.Stdout, "Debug")
+	s := alog.NewAlog(os.Stdout, "", 1024)
 	wg := sync.WaitGroup{}
 
 	start = time.Now()
@@ -68,5 +68,5 @@ func main() {
 
 	fmt.Println("Work async time: " + workTimeAsync.String())
 	fmt.Println("Work sync time: " + workTimeSync.String())
-	fmt.Scanln()
+	//fmt.Scanln()
 }
