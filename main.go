@@ -68,5 +68,5 @@ func main() {
 
 	fmt.Println("Work async time: " + workTimeAsync.String())
 	fmt.Println("Work sync time: " + workTimeSync.String())
-	//fmt.Scanln()
+	fmt.Scanln()
 }

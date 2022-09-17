@@ -5,7 +5,6 @@ import (
 	"io"
 	_ "net/http/pprof"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -40,10 +39,8 @@ func (l *Alog) StartLogging() {
 func (l *Alog) formatHeader(line any) string {
 	now := time.Now()
 	year, month, day := now.Date()
-	date := strconv.Itoa(year) + "/" + strconv.Itoa(int(month)) + "/" + strconv.Itoa(day) + " "
 	hour, min, sec := now.Clock()
-	t := strconv.Itoa(hour) + ":" + strconv.Itoa(min) + ":" + strconv.Itoa(sec) + " "
-	return fmt.Sprintf("%s%s%v", date+t, l.prefix, line)
+	return fmt.Sprintf("%d/%d/%d %d:%d:%d %s%v", year, int(month), day, hour, min, sec, l.prefix, line)
 }
 
 func (l *Alog) Println(in ...any) {
@@ -88,7 +85,6 @@ func (l *Alog) Panicln(v ...any) {
 	}
 	str := fmt.Sprintln(v...)
 	l.writer.Write([]byte(l.formatHeader(str)))
-	l.StopLogging()
 	panic(str)
 }
 
@@ -98,7 +94,6 @@ func (l *Alog) Panicf(format string, v ...any) {
 	}
 	str := fmt.Sprintf(format, v...)
 	l.writer.Write([]byte(l.formatHeader(str)))
-	l.StopLogging()
 	panic(str)
 }
 
